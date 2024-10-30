@@ -52,7 +52,7 @@ You now have a local copy of the project on your computer!
 
 ### Setting Up a Virtual Environment
 
-A virtual environment keeps project-specific dependencies separate from other projects. This helps avoid version conflicts.
+A virtual environment keeps project-specific dependencies separate from other projects, helping avoid version conflicts.
 
 1. **Open a Terminal**:
    - On Windows, open Command Prompt or PowerShell.
@@ -61,45 +61,35 @@ A virtual environment keeps project-specific dependencies separate from other pr
 2. **Navigate to the Project Folder**:
    ```bash
    cd path/to/project-folder
-3. **Create the Virtual Environment**:
-  ```bash
-   python3 -m venv venv
-4. **Navigate to the Project Folder**:
+
+1. **Open a Terminal**:
+   - On Windows, open Command Prompt or PowerShell.
+   - On Mac, open Terminal.
+
+2. **Navigate to the Project Folder**:
    ```bash
    cd path/to/project-folder
-5. **Create the Virtual Environment**:
-   ```bash
-   # On Mac/Linux
-   python3 -m venv venv
-   # On Windows
-   py -m venv venv
-6. **Activate the Virtual Environment**:
-   ```bash
-   # On Mac/Linux
-   source venv/bin/activate
-   # On Windows
-   .\venv\Scripts\activate
-7. **Install Existing Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-8. **Install New Packages as Needed (Example: Pandas)**:
-   ```bash
-   pip install <package-name>
-9. **Update requirements.txt with the Latest Dependencies**:
-   ```bash
-   pip install <package-name>
-10. **Deactivate the Virtual Environment When Finished**:
-   ```bash
-   deactivate
 
+1. **Open a Terminal**:
+   - On Windows, open Command Prompt or PowerShell.
+   - On Mac, open Terminal.
 
----
+2. **Navigate to the Project Folder**:
+   ```bash
+   cd path/to/project-folder
 
-### Notes on This README
+1. **Open a Terminal**:
+   - On Windows, open Command Prompt or PowerShell.
+   - On Mac, open Terminal.
 
-- **Detailed GitHub Setup**: Explains GitHub setup and usage for beginners, using GitHub Desktop to simplify the process.
-- **Clear Instructions for Virtual Environment**: Walks through creating, activating, and deactivating the virtual environment.
-- **Step-by-Step for Dependencies**: Shows how to keep `requirements.txt` updated whenever a package is added.
-- **Guidance on Contributing**: Detailed steps for updating, committing, and pushing changes ensure everyone stays in sync.
+2. **Navigate to the Project Folder**:
+   ```bash
+   cd path/to/project-folder
 
-This guide will make it easy for anyone to get started, even if they’re entirely new to GitHub!
+1. **Open a Terminal**:
+   - On Windows, open Command Prompt or PowerShell.
+   - On Mac, open Terminal.
+
+2. **Navigate to the Project Folder**:
+   ```bash
+   cd path/to/project-folder
