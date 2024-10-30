@@ -7,8 +7,6 @@
    - [Step 2: Set Up GitHub Desktop](#step-2-set-up-github-desktop)
    - [Step 3: Clone the Repository](#step-3-clone-the-repository)
 3. [Setting Up a Virtual Environment](#setting-up-a-virtual-environment)
-4. [Updating Dependencies](#updating-dependencies)
-5. [Usage](#usage)
 6. [Contributing to the Project](#contributing-to-the-project)
 
 ---
@@ -92,10 +90,9 @@ A virtual environment keeps project-specific dependencies separate from other pr
    ```bash
    deactivate
 
-
 ---
 
-### Notes on This README
+### Contributing to the project
 
 - **Detailed GitHub Setup**: Explains GitHub setup and usage for beginners, using GitHub Desktop to simplify the process.
 - **Clear Instructions for Virtual Environment**: Walks through creating, activating, and deactivating the virtual environment.
