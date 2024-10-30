@@ -64,33 +64,33 @@ A virtual environment keeps project-specific dependencies separate from other pr
 3. **Create the Virtual Environment**:
   ```bash
    python3 -m venv venv
-4. **Create the Virtual Environment**:
-# Step 1: Navigate to the Project Folder
-cd path/to/project-folder
-
-# Step 2: Create the Virtual Environment
-# On Mac/Linux
-python3 -m venv venv
-# On Windows
-py -m venv venv
-
-# Step 3: Activate the Virtual Environment
-# On Mac/Linux
-source venv/bin/activate
-# On Windows
-.\venv\Scripts\activate
-
-# Step 4: Install Existing Dependencies
-pip install -r requirements.txt
-
-# Step 5: Install New Packages as Needed (Example: requests)
-pip install <package-name>
-
-# Step 6: Update requirements.txt with the Latest Dependencies
-pip freeze > requirements.txt
-
-# Step 7: Deactivate the Virtual Environment When Finished
-deactivate
+4. **Navigate to the Project Folder**:
+   ```bash
+   cd path/to/project-folder
+5. **Create the Virtual Environment**:
+   ```bash
+   # On Mac/Linux
+   python3 -m venv venv
+   # On Windows
+   py -m venv venv
+6. **Activate the Virtual Environment**:
+   ```bash
+   # On Mac/Linux
+   source venv/bin/activate
+   # On Windows
+   .\venv\Scripts\activate
+7. **Install Existing Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+8. **Install New Packages as Needed (Example: Pandas)**:
+   ```bash
+   pip install <package-name>
+9. **Update requirements.txt with the Latest Dependencies**:
+   ```bash
+   pip install <package-name>
+10. **Deactivate the Virtual Environment When Finished**:
+   ```bash
+   deactivate
 
 
 ---
