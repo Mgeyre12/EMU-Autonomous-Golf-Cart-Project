@@ -20,27 +20,25 @@ def Preprocessing(frame):
     vertices = np.array([
         [
             (int(imshape[1] * 0.01), imshape[0]),  # Bottom-left (moved further left)
-            (int(imshape[1] * 0.1), int(imshape[0] * 0.3)),  # Top-left (unchanged)
-            (int(imshape[1] * 0.9), int(imshape[0] * 0.3)),  # Top-right (unchanged)
+            (int(imshape[1] * 0.1), int(imshape[0] * 0.45)),  # Top-left (unchanged)
+            (int(imshape[1] * 0.9), int(imshape[0] * 0.45)),  # Top-right (unchanged)
             (int(imshape[1] * 0.99), imshape[0])  # Bottom-right (moved further right)
         ]
     ], dtype=np.int32)
 
     # Inner polygon (blocking out middle)
-    """
-    inner_vertices = np.array([
-        [
-            (int(imshape[1] * 0.02), imshape[0]),  # Bottom-left (closer to center)
-            (int(imshape[1] * 0.25), int(imshape[0] * 0.3)),  # Top-left (higher up)
-            (int(imshape[1] * 0.55), int(imshape[0] * 0.3)),  # Top-right
-            (int(imshape[1] * 0.98), imshape[0])  # Bottom-right (closer to center)
-        ]
-    ], dtype=np.int32)
-    """
+    
+#     inner_vertices = np.array([[
+#     (int(imshape[1] * 0.35), imshape[0]),  # Bottom-left (closer to center)
+#     (int(imshape[1] * 0.45), int(imshape[0] * 0.3)),  # Top-left (higher up)
+#     (int(imshape[1] * 0.55), int(imshape[0] * 0.3)),  # Top-right
+#     (int(imshape[1] * 0.65), imshape[0])  # Bottom-right (closer to center)
+# ]], dtype=np.int32)
+   
 
     mask = np.zeros_like(edges)
     cv2.fillPoly(mask, vertices, 255)
-    """ cv2.fillPoly(mask, inner_vertices, 0) """
+    # cv2.fillPoly(mask, inner_vertices, 0)
     masked_edges = cv2.bitwise_and(edges, mask)
     cv2.imshow("Masked Edges", masked_edges)
     
@@ -104,14 +102,14 @@ def Preprocessing(frame):
     return masked_edges  # Return edges instead of blurred
 
 # Open the default webcam
-cap = cv2.VideoCapture("Sidewalk POV Walking.mp4")
+cap = cv2.VideoCapture("IMG_1178.mov")
 
 while True:
     ret, frame = cap.read()
     if not ret:
         break
 
-    #frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)  # Adjust as needed
+    frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)  # Adjust as needed
     
     # Preprocess the captured frame
     processed_frame = Preprocessing(frame)

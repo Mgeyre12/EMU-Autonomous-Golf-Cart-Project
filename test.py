@@ -1,130 +1,125 @@
 import cv2
 import numpy as np
 
-def process_frame(frame):
-    # Step 1: Preprocessing
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    lower_sidewalk = np.array([0, 0, 200])     # Example thresholds
-    upper_sidewalk = np.array([255, 50, 255])
-    sidewalk_mask = cv2.inRange(hsv, lower_sidewalk, upper_sidewalk)
-    color_filtered = cv2.bitwise_and(frame, frame, mask=sidewalk_mask)
-    
-    gray = cv2.cvtColor(color_filtered, cv2.COLOR_BGR2GRAY)
-    blur_gray = cv2.GaussianBlur(gray, (5, 5), 0)
-    
-    # Step 2: Edge Detection
-    low_threshold = 50
-    high_threshold = 150
-    edges = cv2.Canny(blur_gray, low_threshold, high_threshold)
-    
-    # Step 3: Define ROI
-    imshape = frame.shape
-    vertices = np.array([[
-        (0, imshape[0]),
-        (0, int(imshape[0] * 0.6)),
-        (imshape[1], int(imshape[0] * 0.6)),
-        (imshape[1], imshape[0])
-    ]], dtype=np.int32)
-
-    mask = np.zeros_like(edges)
-    cv2.fillPoly(mask, vertices, 255)
-    masked_edges = cv2.bitwise_and(edges, mask)
-    
-    # -- DEBUG VISUALIZATIONS --
-    # 1. Show the ROI polygon on top of the original frame.
-    annotated_roi = frame.copy()
-    cv2.polylines(annotated_roi, [vertices], isClosed=True, color=(0, 255, 0), thickness=2)
-    cv2.imshow("ROI Visualization", annotated_roi)
-
-    # 2. Show the edges before masking.
-    cv2.imshow("Edges (Pre-ROI)", edges)
-
-    # 3. Show the edges after applying the ROI.
-    cv2.imshow("Edges (Masked)", masked_edges)
-    # ----------------------------------------
-
-    # Step 4: Line Detection via Hough Transform
-    rho = 2
-    theta = np.pi / 180
-    threshold = 30
-    min_line_length = 20
-    max_line_gap = 1
-    lines = cv2.HoughLinesP(masked_edges, rho, theta, threshold,
-                            np.array([]), min_line_length, max_line_gap)
-    
+def average_slope_intercept(lines, side):
     if lines is None:
-        # If no lines found, return original frame + zero error
-        return frame, 0
-    
-    # Step 5: Classify and Average the Lines
+        return None
+    slopes = []
+    intercepts = []
+    for line in lines:
+        x1, y1, x2, y2 = line.reshape(4)
+        if x2 == x1:
+            continue  # Avoid division by zero
+        slope = (y2 - y1) / (x2 - x1)
+        if side == 'left':
+            if slope >= -0.5:  # Adjust slope threshold for left lines
+                continue
+        elif side == 'right':
+            if slope <= 0.5:   # Adjust slope threshold for right lines
+                continue
+        intercept = y1 - slope * x1
+        slopes.append(slope)
+        intercepts.append(intercept)
+    if not slopes:
+        return None
+    avg_slope = np.mean(slopes)
+    avg_intercept = np.mean(intercepts)
+    return (avg_slope, avg_intercept)
+
+def make_coordinates(image, line_params, ymax):
+    if line_params is None:
+        return None
+    slope, intercept = line_params
+    y1 = ymax
+    y2 = int(y1 * 0.6)  # Upper y for drawing the line
+    x1 = int((y1 - intercept) / slope)
+    x2 = int((y2 - intercept) / slope)
+    return np.array([x1, y1, x2, y2])
+
+# Initialize video capture
+cap =  cv2.VideoCapture("SillHall_left.mp4")  # Use 0 for webcam or replace with video path
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+    frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+    height, width = frame.shape[:2]
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blur, 50, 150)  # Adjust Canny thresholds as needed
+
+    # Define region of interest (lower half)
+    mask = np.zeros_like(edges)
+    polygon = np.array([[
+        (0, height),
+        (width, height),
+        (width, height // 2),
+        (0, height // 2),
+    ]], dtype=np.int32)
+    cv2.fillPoly(mask, polygon, 255)
+    masked_edges = cv2.bitwise_and(edges, mask)
+
+    # Detect lines using Hough Transform
+    lines = cv2.HoughLinesP(masked_edges, 1, np.pi/180, 50, np.array([]), minLineLength=50, maxLineGap=30)
+
     left_lines = []
     right_lines = []
-    for line in lines:
-        for x1, y1, x2, y2 in line:
-            if x2 == x1:  # avoid division by zero
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line.reshape(4)
+            if x2 == x1:
                 continue
             slope = (y2 - y1) / (x2 - x1)
-            # Adjust slopes if needed
-            if slope < -0.5:
-                left_lines.append((x1, y1, x2, y2))
-            elif slope > 0.5:
-                right_lines.append((x1, y1, x2, y2))
-    
-    def average_line(lines_list):
-        if len(lines_list) == 0:
-            return None
-        x_coords = []
-        y_coords = []
-        for x1, y1, x2, y2 in lines_list:
-            x_coords += [x1, x2]
-            y_coords += [y1, y2]
-        avg_x = int(np.mean(x_coords))
-        avg_y = int(np.mean(y_coords))
-        return (avg_x, avg_y)
-    
-    left_point = average_line(left_lines)
-    right_point = average_line(right_lines)
-    
-    if left_point is None or right_point is None:
-        return frame, 0
-    
-    # Step 7: Calculate the Midpoint and Error
-    midpoint_x = int((left_point[0] + right_point[0]) / 2)
-    center_x = imshape[1] // 2
-    error = center_x - midpoint_x
-    
-    # Step 8: Annotate for visualization
-    annotated = frame.copy()
-    cv2.circle(annotated, (left_point[0], imshape[0] - 10), 5, (0, 0, 255), -1)
-    cv2.circle(annotated, (right_point[0], imshape[0] - 10), 5, (0, 0, 255), -1)
-    cv2.circle(annotated, (midpoint_x, imshape[0] - 10), 5, (0, 255, 0), -1)
-    cv2.line(annotated, (center_x, imshape[0]), (midpoint_x, imshape[0] - 10), (255, 0, 0), 2)
-    
-    return annotated, error
+            if slope < -0.5:  # Left lane candidates
+                left_lines.append(line)
+            elif slope > 0.5:  # Right lane candidates
+                right_lines.append(line)
 
-def main():
-    cap = cv2.VideoCapture(0)  # or a video file path
-    if not cap.isOpened():
-        print("Error: Could not open video capture.")
-        return
-    
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("Failed to grab frame")
-            break
-        
-        annotated_frame, steering_error = process_frame(frame)
-        print("Steering Error:", steering_error)
-        
-        cv2.imshow("Final Annotated Frame", annotated_frame)
-        
-        # Press 'q' to exit
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-    
-    cap.release()
-    cv2.destroyAllWindows()
+    # Average and extrapolate lines
+    left_params = average_slope_intercept(left_lines, 'left')
+    right_params = average_slope_intercept(right_lines, 'right')
+    left_line = make_coordinates(frame, left_params, height)
+    right_line = make_coordinates(frame, right_params, height)
 
-if __name__ == "__main__":
-    main()
+    # Calculate midpoint and steering angle
+    steering_angle = 0
+    if left_line is not None and right_line is not None:
+        left_x_bottom = left_line[0]
+        right_x_bottom = right_line[0]
+        midpoint_x = (left_x_bottom + right_x_bottom) // 2
+        midpoint_y = height
+        cv2.circle(frame, (midpoint_x, midpoint_y), 10, (0, 255, 0), -1)
+
+        # Calculate error from center
+        desired_center = width // 2
+        error = desired_center - midpoint_x
+        steering_angle = error * 0.1  # Adjust gain for responsiveness
+
+        # Apply threshold to ignore minor adjustments
+        if abs(steering_angle) < 10:
+            steering_angle = 0
+    else:
+        # Handle missing lines (optional: use previous values)
+        steering_angle = 0
+
+    # Draw detected lines
+    if left_line is not None:
+        x1, y1, x2, y2 = left_line.astype(int)
+        cv2.line(frame, (x1, y1), (x2, y2), (0, 0, 255), 5)
+    if right_line is not None:
+        x1, y1, x2, y2 = right_line.astype(int)
+        cv2.line(frame, (x1, y1), (x2, y2), (0, 0, 255), 5)
+
+    # Display steering angle
+    cv2.putText(frame, f"Steering: {steering_angle:.2f}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+    # Show frames
+    cv2.imshow('Frame', frame)
+    cv2.imshow('Edges', edges)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
