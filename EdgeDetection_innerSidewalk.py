@@ -43,7 +43,6 @@ while True:
     ret, frame = cap.read()
     if not ret:
         break
-    frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
     height, width = frame.shape[:2]
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (7, 7), 0)
