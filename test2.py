@@ -26,10 +26,12 @@ def average_slope_intercept(lines, side):
     avg_intercept = np.mean(intercepts)
     return (avg_slope, avg_intercept)
 
-def make_coordinates(image, line_params, ymax):
-    if line_params is None:
+def make_coordinates(image, line, ymax):
+    if line is None:
         return None
-    slope, intercept = line_params
+    x1, y1, x2, y2 = line.reshape(4)
+    slope = (y2 - y1) / (x2 - x1)
+    intercept = y1 - slope * x1
     y1 = ymax
     y2 = int(y1 * 0.6)  # Upper y for drawing the line
     x1 = int((y1 - intercept) / slope)
@@ -76,11 +78,17 @@ while True:
             elif slope > 0.5:  # Right lane candidates
                 right_lines.append(line)
 
+    # Select the outermost lines
+    if left_lines:
+        left_lines = sorted(left_lines, key=lambda x: x[0][0])  # Sort by x1 (leftmost)
+        left_line = left_lines[0]  # Select the leftmost line
+    if right_lines:
+        right_lines = sorted(right_lines, key=lambda x: x[0][0], reverse=True)  # Sort by x1 (rightmost)
+        right_line = right_lines[0]  # Select the rightmost line
+
     # Average and extrapolate lines
-    left_params = average_slope_intercept(left_lines, 'left')
-    right_params = average_slope_intercept(right_lines, 'right')
-    left_line = make_coordinates(frame, left_params, height)
-    right_line = make_coordinates(frame, right_params, height)
+    left_line = make_coordinates(frame, left_line, height) if left_lines else None
+    right_line = make_coordinates(frame, right_line, height) if right_lines else None
 
     # Calculate midpoint and steering angle
     steering_angle = 0
