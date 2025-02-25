@@ -37,7 +37,7 @@ def make_coordinates(image, line_params, ymax):
     return np.array([x1, y1, x2, y2])
 
 # Initialize video capture
-cap =  cv2.VideoCapture("SillHall_side_turn.mov")  # Use 0 for webcam or replace with video path
+cap =  cv2.VideoCapture("Sidewalk_Video/SillHall_side_turn.mov")  # Use 0 for webcam or replace with video path
 
 while True:
     ret, frame = cap.read()
