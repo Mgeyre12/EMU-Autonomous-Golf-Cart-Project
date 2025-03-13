@@ -12,11 +12,11 @@ def average_slope_intercept(lines, side):
             continue  # Avoid division by zero
         slope = (y2 - y1) / (x2 - x1)
         if side == 'left':
-            if slope >= -0.5:  # Adjust slope threshold for left lines
+            if slope >= -0.5:  # Adjust slope t hreshold for left lines
                 continue
         elif side == 'right':
             if slope <= 0.5:   # Adjust slope threshold for right lines
-                continue
+               continue
         intercept = y1 - slope * x1
         slopes.append(slope)
         intercepts.append(intercept)
@@ -83,23 +83,41 @@ while True:
 
     # Calculate midpoint and steering angle
     steering_angle = 0
+    desired_center = width // 2  # Ideal center of the lane
+    midpoint_x = None
+
     if left_line is not None and right_line is not None:
+    # Both lanes detected, use actual midpoint
         left_x_bottom = left_line[0]
         right_x_bottom = right_line[0]
         midpoint_x = (left_x_bottom + right_x_bottom) // 2
+    elif left_line is not None:
+    # Only left lane detected, estimate right lane
+        left_x_bottom = left_line[0]
+        estimated_right_x = left_x_bottom + width // 3  # Assume right lane at 1/3 width
+        midpoint_x = (left_x_bottom + estimated_right_x) // 2
+    elif right_line is not None:
+        # Only right lane detected, estimate left lane
+        right_x_bottom = right_line[0]
+        estimated_left_x = right_x_bottom - width // 3  # Assume left lane at 1/3 width
+        midpoint_x = (right_x_bottom + estimated_left_x) // 2
+    
+    if midpoint_x is not None:
         midpoint_y = height
         cv2.circle(frame, (midpoint_x, midpoint_y), 10, (0, 255, 0), -1)
 
-        # Calculate error from center
-        desired_center = width // 2
+        # Calculate error from desired center
         error = desired_center - midpoint_x
         steering_angle = error * 0.1  # Adjust gain for responsiveness
 
-        # Apply threshold to ignore minor adjustments
-        if abs(steering_angle) < 10:
-            steering_angle = 0
+        # Apply smoothing to avoid sudden changes
+        steering_angle = max(min(steering_angle, 30), -30)  # Clamp steering to avoid extreme values
+
     else:
-        steering_angle =  0
+    # If no lanes detected, keep previous steering or slowly return to center
+        steering_angle *= 0.9  # Gradually return to 0
+
+
     # Draw detected lines
     if left_line is not None:
         x1, y1, x2, y2 = left_line.astype(int)
@@ -110,6 +128,8 @@ while True:
 
     # Display steering angle
     cv2.putText(frame, f"Steering: {steering_angle:.2f}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(frame, f"Left: {left_x_bottom:.2f}", (50, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(frame, f"Right: {right_x_bottom:.2f}", (50, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     # Show frames
     cv2.imshow('Frame', frame)
