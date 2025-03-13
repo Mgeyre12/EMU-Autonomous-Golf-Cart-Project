@@ -44,6 +44,7 @@ while True:
     if not ret:
         break
     height, width = frame.shape[:2]
+    cv2.imshow('original photo', frame)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (7, 7), 0)
     edges = cv2.Canny(blur, 50, 150, L2gradient = True)  # Adjust Canny thresholds as needed
@@ -61,6 +62,8 @@ while True:
 
     # Detect lines using Hough Transform
     lines = cv2.HoughLinesP(masked_edges, 1, np.pi/180, 50, np.array([]), minLineLength=50, maxLineGap=30)
+    cv2.imshow('Mask', masked_edges)
+
 
     left_lines = []
     right_lines = []
@@ -104,15 +107,22 @@ while True:
     
     if midpoint_x is not None:
         midpoint_y = height
-        cv2.circle(frame, (midpoint_x, midpoint_y), 10, (0, 255, 0), -1)
+        
+        # Change 2: Replace midpoint circle with a vertical line
+        # Draw a vertical line from the midpoint up the frame
+        line_top_y = int(height * 0.6)  # Match the height of lane lines
+        if left_line is not None and right_line is not None:
+          cv2.line(frame, (midpoint_x, midpoint_y), (midpoint_x, line_top_y), (0, 255, 0), 3)
 
         # Calculate error from desired center
         error = desired_center - midpoint_x
         steering_angle = error * 0.1  # Adjust gain for responsiveness
 
         # Apply smoothing to avoid sudden changes
+        if abs(steering_angle) < 6:
+            steering_angle = 0
         steering_angle = max(min(steering_angle, 30), -30)  # Clamp steering to avoid extreme values
-
+    
     else:
     # If no lanes detected, keep previous steering or slowly return to center
         steering_angle *= 0.9  # Gradually return to 0
