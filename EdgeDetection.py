@@ -121,8 +121,8 @@ while True:
         steering_angle = error * 0.1  # Adjust gain for responsiveness
 
         # Apply smoothing to avoid sudden changes
-        if abs(steering_angle) < 6:
-            steering_angle = 0
+        # if abs(steering_angle) < 6:
+        #    steering_angle = 0
         steering_angle = max(min(steering_angle, 30), -30)  # Clamp steering to avoid extreme values
     
     else:
