@@ -39,11 +39,13 @@ def make_coordinates(image, line_params, ymax):
     return np.array([x1, y1, x2, y2])
 
 # Setup Serial
-arduino = serial.Serial(port='COM3', baudrate=115200, timeout=1)
-time.sleep(2)  # wait for Arduino reset
+arduino = serial.Serial(port='COM5', baudrate=115200, timeout=1)
+#time.sleep(2)  # wait for Arduino reset
 
 # Initialize video capture
 cap =  cv2.VideoCapture("Sidewalk_Video/output12.mp4")  # Use 0 for webcam or replace with video path
+last_error = 0
+totalError = 0
 
 while True:
     ret, frame = cap.read()
@@ -92,6 +94,9 @@ while True:
     right_params = average_slope_intercept(right_lines, 'right')
     left_line = make_coordinates(frame, left_params, height)
     right_line = make_coordinates(frame, right_params, height)
+    Kp = 0.1;   #Proportional gain
+    Ki = 0.01;   #Integral gain
+    Kd = 0.1;   #Derivative gain
 
     # Calculate midpoint and steering angle
     steering_angle = 0
@@ -124,8 +129,12 @@ while True:
           cv2.line(frame, (midpoint_x, midpoint_y), (midpoint_x, line_top_y), (0, 255, 0), 3)
 
         # Calculate error from desired center
-        error = desired_center - midpoint_x
-        steering_angle = error * 0.1  # Adjust gain for responsiveness
+        error = (desired_center - midpoint_x)
+        changeError = error - last_error; # derivative term
+        totalError += error; #accumalate errors to find integral term
+        steering_angle = (Kp * error) + (Ki * totalError) + (Kd * changeError); #total gain
+        last_error = error
+
 
         # Apply smoothing to avoid sudden changes
         # if abs(steering_angle) < 6:
@@ -135,11 +144,12 @@ while True:
     else:
     # If no lanes detected, keep previous steering or slowly return to center
         steering_angle *= 0.9  # Gradually return to 0
-    command = None
-    if steering_angle < 0 and abs(steering_angle) > 5:
-       command = "CW 3000"
-    elif steering_angle > 0 and abs(steering_angle) > 5:
-        command = "CCW 3000"
+
+    command = str(steering_angle*100)
+    if steering_angle < 0 and abs(steering_angle) > 1:
+       command = ("CW" + command)
+    elif steering_angle > 0 and abs(steering_angle) > 1:
+        command = ("CCW" + command)
     if command:
         arduino.write((command + '\n').encode())
         print("Sending to Arduino:", command)
@@ -164,4 +174,4 @@ while True:
         break
 
 cap.release()
-cv2.destroyAllWindows()
+cv2.destroyAllWindows() 
