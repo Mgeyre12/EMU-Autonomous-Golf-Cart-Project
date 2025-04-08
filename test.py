@@ -40,7 +40,7 @@ def make_coordinates(image, line_params, ymax):
 
 # Setup Serial
 arduino = serial.Serial(port='COM5', baudrate=115200, timeout=1)
-#time.sleep(2)  # wait for Arduino reset
+time.sleep(2)  # wait for Arduino reset
 
 # Initialize video capture
 cap =  cv2.VideoCapture("Sidewalk_Video/output12.mp4")  # Use 0 for webcam or replace with video path
@@ -137,19 +137,19 @@ while True:
 
 
         # Apply smoothing to avoid sudden changes
-        # if abs(steering_angle) < 6:
-        #    steering_angle = 0
+        if abs(steering_angle) < 6:
+          steering_angle = 0
         steering_angle = max(min(steering_angle, 30), -30)  # Clamp steering to avoid extreme values
     
     else:
     # If no lanes detected, keep previous steering or slowly return to center
         steering_angle *= 0.9  # Gradually return to 0
 
-    command = str(steering_angle*100)
+    command = str(abs(steering_angle*1))
     if steering_angle < 0 and abs(steering_angle) > 1:
-       command = ("CW" + command)
+       command = ("L" + "<" + command + ">")
     elif steering_angle > 0 and abs(steering_angle) > 1:
-        command = ("CCW" + command)
+        command = ("R" + "<" + command + ">") 
     if command:
         arduino.write((command + '\n').encode())
         print("Sending to Arduino:", command)
