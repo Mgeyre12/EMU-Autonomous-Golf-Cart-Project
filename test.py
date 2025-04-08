@@ -39,7 +39,7 @@ def make_coordinates(image, line_params, ymax):
     return np.array([x1, y1, x2, y2])
 
 # Setup Serial
-arduino = serial.Serial(port='/dev/tty.usbmodem11301', baudrate=115200, timeout=1)
+arduino = serial.Serial(port='COM3', baudrate=115200, timeout=1)
 time.sleep(2)  # wait for Arduino reset
 
 # Initialize video capture
