@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+
 def average_slope_intercept(lines, side):
     if lines is None:
         return None
@@ -36,6 +37,7 @@ def make_coordinates(image, line_params, ymax):
     x2 = int((y2 - intercept) / slope)
     return np.array([x1, y1, x2, y2])
 
+
 # Initialize video capture
 cap =  cv2.VideoCapture("Sidewalk_Video/output12.mp4")  # Use 0 for webcam or replace with video path
 
@@ -47,14 +49,15 @@ while True:
     cv2.imshow('original photo', frame)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (7, 7), 0)
-    edges = cv2.Canny(blur, 10, 20,L2gradient = True)    # Adjust Canny thresholds as needed
+    edges = cv2.Canny(blur, 10, 10,L2gradient = True)    # Adjust Canny thresholds as needed
 
     # Define region of interest (lower half)
     mask = np.zeros_like(edges)  # Create a blank mask
 
-    # Define rectangle coordinates
-    x1, y1 = 0, int(height * 0.7)  # Top-left corner of rectangle
-    x2, y2 = width, height         # Bottom-right corner of rectangle
+    # Define rectangle coordinates5
+    x1 = int(width * 0.1)  # Move left edge 10% toward the center
+    y1 = int(height * 0.7)  # Top-left corner of rectangle
+    x2, y2 = width, height  # Bottom-right corner of rectangle
 
     # Draw a white rectangle on the mask
     cv2.rectangle(mask, (x1, y1), (x2, y2), 255, thickness=cv2.FILLED)
