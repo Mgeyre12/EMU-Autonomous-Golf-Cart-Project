@@ -26,7 +26,7 @@ def average_slope_intercept(lines, side):
     avg_slope = np.mean(slopes)
     avg_intercept = np.mean(intercepts)
     return (avg_slope, avg_intercept)
-
+    
 def make_coordinates(image, line_params, ymax):
     if line_params is None:
         return None
