@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
-
+import serial
+import time
 
 def average_slope_intercept(lines, side):
     if lines is None:
@@ -26,7 +27,7 @@ def average_slope_intercept(lines, side):
     avg_slope = np.mean(slopes)
     avg_intercept = np.mean(intercepts)
     return (avg_slope, avg_intercept)
-    
+
 def make_coordinates(image, line_params, ymax):
     if line_params is None:
         return None
@@ -37,9 +38,14 @@ def make_coordinates(image, line_params, ymax):
     x2 = int((y2 - intercept) / slope)
     return np.array([x1, y1, x2, y2])
 
+# Setup Serial
+arduino = serial.Serial(port='COM5', baudrate=115200, timeout=1)
+time.sleep(2)  # wait for Arduino reset
 
 # Initialize video capture
 cap =  cv2.VideoCapture("Sidewalk_Video/output12.mp4")  # Use 0 for webcam or replace with video path
+last_error = 0
+totalError = 0
 
 while True:
     ret, frame = cap.read()
@@ -88,6 +94,9 @@ while True:
     right_params = average_slope_intercept(right_lines, 'right')
     left_line = make_coordinates(frame, left_params, height)
     right_line = make_coordinates(frame, right_params, height)
+    Kp = 0.1;   #Proportional gain
+    Ki = 0.01;   #Integral gain
+    Kd = 0.1;   #Derivative gain
 
     # Calculate midpoint and steering angle
     steering_angle = 0
@@ -120,18 +129,31 @@ while True:
           cv2.line(frame, (midpoint_x, midpoint_y), (midpoint_x, line_top_y), (0, 255, 0), 3)
 
         # Calculate error from desired center
-        error = desired_center - midpoint_x
-        steering_angle = error * 0.1  # Adjust gain for responsiveness
+        error = (desired_center - midpoint_x)
+        changeError = error - last_error; # derivative term
+        totalError += error; #accumalate errors to find integral term
+        steering_angle = (Kp * error) + (Ki * totalError) + (Kd * changeError); #total gain
+        last_error = error
+
 
         # Apply smoothing to avoid sudden changes
-        # if abs(steering_angle) < 6:
-        #    steering_angle = 0
+        if abs(steering_angle) < 6:
+          steering_angle = 0
         steering_angle = max(min(steering_angle, 30), -30)  # Clamp steering to avoid extreme values
     
     else:
     # If no lanes detected, keep previous steering or slowly return to center
         steering_angle *= 0.9  # Gradually return to 0
 
+    command = str(abs(steering_angle*1))
+    if steering_angle < 0 and abs(steering_angle) > 1:
+       command = ("L" + "<" + command + ">")
+    elif steering_angle > 0 and abs(steering_angle) > 1:
+        command = ("R" + "<" + command + ">") 
+    if command:
+        arduino.write((command + '\n').encode())
+        print("Sending to Arduino:", command)
+        time.sleep(0.1)
 
     # Draw detected lines
     if left_line is not None:
@@ -152,4 +174,4 @@ while True:
         break
 
 cap.release()
-cv2.destroyAllWindows()
+cv2.destroyAllWindows() 
