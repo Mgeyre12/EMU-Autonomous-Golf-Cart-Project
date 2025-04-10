@@ -6,4 +6,5 @@ time.sleep(2) # Give time for serial connection to initialize
 
 while True:
     line = ser1.readline().decode('utf-8').rstrip()
+    print("im working")
     print(line) 
