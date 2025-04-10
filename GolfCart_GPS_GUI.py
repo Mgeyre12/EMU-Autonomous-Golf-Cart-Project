@@ -29,13 +29,13 @@ my_label.pack(pady=20)
 
 # Load and resize map image
 # Keep a copy of the original image
-original_map_image = Image.open("Sill_Hall2.jpg")
+original_map_image = Image.open("images/Sill_Hall2.jpg")
 map_width, map_height = original_map_image.size
 map_photo = ImageTk.PhotoImage(original_map_image)
 
 #Game Above Image
 # Load and resize the image
-game_above_image = Image.open("EMU_GameAbove2.jpg")
+game_above_image = Image.open("images/EMU_GameAbove2.jpg")
 game_above_image = game_above_image.resize((300, 200))
 
 # Convert to Tkinter-compatible image
