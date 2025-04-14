@@ -100,9 +100,6 @@ while True:
     right_params = average_slope_intercept(right_lines, 'right')
     left_line = make_coordinates(frame, left_params, height)
     right_line = make_coordinates(frame, right_params, height)
-    Kp = 0.1;   #Proportional gain
-    Ki = 0.01;   #Integral gain
-    Kd = 0.1;   #Derivative gain
 
     # Calculate midpoint and steering angle
     steering_angle = 0
@@ -134,6 +131,10 @@ while True:
         if left_line is not None and right_line is not None:
           cv2.line(frame, (midpoint_x, midpoint_y), (midpoint_x, line_top_y), (0, 255, 0), 3)
 
+        Kp = 0.1;   #Proportional gain
+        Ki = 0.01;   #Integral gain
+        Kd = 0.1;   #Derivative gain
+        
         # Calculate error from desired center
         error = (desired_center - midpoint_x)
         changeError = error - last_error; # derivative term
@@ -143,7 +144,7 @@ while True:
 
 
         # Apply smoothing to avoid sudden changes
-        if abs(steering_angle) < 6:
+        if abs(steering_angle) < 5:
           steering_angle = 0
         steering_angle = max(min(steering_angle, 30), -30)  # Clamp steering to avoid extreme values
     
