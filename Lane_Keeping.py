@@ -39,11 +39,14 @@ def make_coordinates(image, line_params, ymax):
     return np.array([x1, y1, x2, y2])
 
 # Setup Serial
-arduino = serial.Serial(port='COM5', baudrate=115200, timeout=1)
-time.sleep(2)  # wait for Arduino reset
+steerArduino = serial.Serial(port='COM5', baudrate=115200, timeout=1)
+brakeArduino = serial.Serial(port='COM6', baudrate=115200, timeout=1)
+sonarArduino = serial.Serial(port='COM11', baudrate=115200, timeout=1)
+time.sleep(2)  # wait for steerArduino reset
 
 # Initialize video capture
 cap =  cv2.VideoCapture("Sidewalk_Video/output12.mp4")  # Use 0 for webcam or replace with video path
+#cap =  cv2.VideoCapture(0)  # Use 0 for webcam or replace with video path
 last_error = 0
 totalError = 0
 
@@ -55,7 +58,10 @@ while True:
     cv2.imshow('original photo', frame)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (7, 7), 0)
-    edges = cv2.Canny(blur, 10, 10,L2gradient = True)    # Adjust Canny thresholds as needed
+    thresh1 = 15
+    thresh2 = 15
+    edges = cv2.Canny(blur, thresh1, thresh2, L2gradient = True) # Adjust Canny thresholds as needed
+    
 
     # Define region of interest (lower half)
     mask = np.zeros_like(edges)  # Create a blank mask
@@ -151,9 +157,9 @@ while True:
     elif steering_angle > 0 and abs(steering_angle) > 1:
         command = ("R" + "<" + command + ">") 
     if command:
-        arduino.write((command + '\n').encode())
-        print("Sending to Arduino:", command)
-        time.sleep(0.1)
+        steerArduino.write((command + '\n').encode())
+        #print("Sending to steerArduino:", command)
+        #time.sleep(0.1)
 
     # Draw detected lines
     if left_line is not None:
