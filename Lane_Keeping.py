@@ -55,7 +55,7 @@ while True:
     if not ret:
         break
     height, width = frame.shape[:2]
-    cv2.imshow('original photo', frame)
+    #cv2.imshow('original photo', frame)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (7, 7), 0)
     thresh1 = 15
@@ -79,7 +79,7 @@ while True:
 
     # Detect lines using Hough Transform
     lines = cv2.HoughLinesP(masked_edges, 1, np.pi/180, 50, np.array([]), minLineLength=50, maxLineGap=30)
-    cv2.imshow('Mask', masked_edges)
+    #cv2.imshow('Mask', masked_edges)
 
 
     left_lines = []
@@ -181,4 +181,4 @@ while True:
         break
 
 cap.release()
-cv2.destroyAllWindows() 
+cv2.destroyAllWindows()
