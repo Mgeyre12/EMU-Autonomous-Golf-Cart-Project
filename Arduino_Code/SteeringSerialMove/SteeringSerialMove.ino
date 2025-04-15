@@ -9,7 +9,7 @@ void setup() {
   pinMode(DIRECTION_PIN, OUTPUT);
   pinMode(STEP_PIN, OUTPUT);
 
-  digitalWrite(ENABLE_PIN, HIGH); // Enable motor
+  //digitalWrite(ENABLE_PIN, HIGH); // Enable motor
   Serial.println("Motor Ready. Send 'L<steps>' to turn left. 'R<steps>' to turn right. 'X' to disable via Serial.");
 }
 

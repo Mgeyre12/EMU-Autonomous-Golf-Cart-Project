@@ -6,7 +6,7 @@ import pynmea2
 import threading
 
 # Configure serial port
-SERIAL_PORT = 'COM5'
+SERIAL_PORT = 'COM10'
 BAUD_RATE = 460800
 
 # Map image bounds

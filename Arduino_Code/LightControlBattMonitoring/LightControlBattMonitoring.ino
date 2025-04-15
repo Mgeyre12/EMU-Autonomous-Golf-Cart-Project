@@ -6,7 +6,7 @@ float batt_percent;
 
 void setup() {
   
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   pinMode(7, OUTPUT);
   pinMode(8, OUTPUT);
@@ -48,7 +48,7 @@ void loop() {
       else if (input == 't') {  //left turn
         digitalWrite(10, LOW);
       } 
-      else if (input == 'y') {  //left turn
+      else if (input == 'y') {  //left turn`
         digitalWrite(11, LOW);
       } 
     } 

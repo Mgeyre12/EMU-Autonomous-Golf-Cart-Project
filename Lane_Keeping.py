@@ -41,7 +41,9 @@ def make_coordinates(image, line_params, ymax):
 # Setup Serial
 steerArduino = serial.Serial(port='COM5', baudrate=115200, timeout=1)
 brakeArduino = serial.Serial(port='COM6', baudrate=115200, timeout=1)
+relayArduino = serial.Serial(port='COM7', baudrate=115200, timeout=1)
 sonarArduino = serial.Serial(port='COM11', baudrate=115200, timeout=1)
+
 time.sleep(2)  # wait for steerArduino reset
 
 # Initialize video capture
