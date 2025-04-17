@@ -15,6 +15,7 @@ const int drv_enable_pin = 2; //Output pin used to enable the drive motor
 
 double act_vel = 0; //Actual velocity in Hz (1mph = 15.2Hz, 5mph = 76Hz)
 int cmd_vel = 0; //Commanded velocity in Hz (0 - 235)
+int input_vel = 0;
 int vel_cmd_limit;
 double Kp = 0.5;   //Proportional gain
 double Ki = 0.1;   //Integral gain
@@ -96,8 +97,9 @@ void loop() {
       }
     }
     else if (command.startsWith("S")) { //command speed
-    cmd_vel = command.substring(2).toInt(); // Extract and set speed command
-      if(cmd_vel >= 0 && cmd_vel <= 235){ //check if commanded speed is valid
+      input_vel = command.substring(2).toInt(); // Extract and set speed command
+      if(input_vel > 0 && input_vel <= 235){ //check if commanded speed is valid
+        cmd_vel = input_vel;
         digitalWrite(BRAKE_ENABLE_PIN, LOW); //disable brake
       }
       else{ 
@@ -165,8 +167,6 @@ void PIDcalculation(){
   changeError = error - last_error; // derivative term
   totalError += error; //accumalate errors to find integral term
   pidTerm = (Kp * error) + (Ki * totalError) + (Kd * changeError);//total gain
-  pidTerm = constrain(pidTerm, 0, 255);//constraining to appropriate value
-  pidTerm_scaled = abs(pidTerm);//make sure it's a positive value
   if(cmd_vel==0){ //Set the output to 0 if the commanded velocity is 0
     error = 0;
     totalError = 0;

@@ -17,6 +17,6 @@ void loop(){
   distance = pulseIn(ECHOPIN, HIGH)/58; // Read in times pulse
   //Serial.println(distance);
   Serial.print(distance);
-  Serial.println("   cm");                   
+  Serial.println(" cm");                   
   delay(50);// Wait 50mS before next ranging
 }
