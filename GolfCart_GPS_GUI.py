@@ -4,6 +4,8 @@ from PIL import Image, ImageTk, ImageDraw
 import serial
 import pynmea2
 import threading
+import subprocess
+import os
 
 # Configure serial port
 SERIAL_PORT = 'COM10'
@@ -77,7 +79,13 @@ coords_frame.place(x=75, y=475)
 gps_coords_label = Label(coords_frame, text="Lat: ---, Lon: ---", font=("Arial", 14), bg="lightgray", fg="black")
 gps_coords_label.pack()
 
-
+# Create name of requested file
+def launch_systems():
+    script_path1 = os.path.join(os.path.dirname(__file__), "Lane_Keeping.py")           # Create name of requested file
+    subprocess.Popen(["start", "cmd", "/k", f"python {script_path1}"], shell=True)  # Open a command line, run the requested script and keep window open
+                                                                                    # start is a powershell command and needs its own command.
+    #script_path2 = os.path.join(os.path.dirname(__file__), "SonarRecieve.py")
+    #subprocess.Popen(["start", "cmd", "/k", f"python {script_path2}"], shell=True)
 
 def parse_nmea():
     """ Reads GPS data from the serial port and extracts lat/lon and speed. """
@@ -268,6 +276,21 @@ emergency_button = Button(
     highlightthickness=0
 )
 emergency_button.place(x=1165, y=200)
+
+launch_button = Button(
+    root,
+    text="Launch System",
+    command=launch_systems,
+    bg="yellow",
+    fg="white",
+    width=25,
+    height=4,
+    relief="flat",
+    font=("Arial", 14, "bold"),
+    bd=5,
+    highlightthickness=0
+)
+launch_button.place(x=1165, y=400)
 
 # Run Tkinter loop
 root.mainloop()
