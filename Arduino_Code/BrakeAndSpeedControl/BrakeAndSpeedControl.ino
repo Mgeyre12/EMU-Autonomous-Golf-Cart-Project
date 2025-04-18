@@ -3,7 +3,8 @@
 #define DIRECTION_PIN 10 // Sets motor direction (left/right)
 #define STEP_PIN 8      // Sends step pulses to the motor
 int brakePos;
-int brakeStepLimit;
+const int brakeStepLimit = 2000; // maximum steps engaging brake clockwise before torque limit reached
+const int vel_cmd_limit = 235; //maximum velocity command value
 
 float duration;
 float period;
@@ -12,10 +13,10 @@ int refresh = 10;
 const int vel_cmd_pin = 9; //PWM output pin used to command the cart speed
 const int act_vel_pin = 48; //Input pin used to measure the cart speed
 const int drv_enable_pin = 2; //Output pin used to enable the drive motor
+const int vel_cmd_relay = 7; //Output pin used to enable the drive motor
 
 double act_vel = 0; //Actual velocity in Hz (1mph = 15.2Hz, 5mph = 76Hz)
 int cmd_vel = 0; //Commanded velocity in Hz (0 - 235)
-int vel_cmd_limit;
 double Kp = 0.5;   //Proportional gain
 double Ki = 0.1;   //Integral gain
 double Kd = 0.5;   //Derivative gain
@@ -35,19 +36,19 @@ void setup() {
   pinMode(vel_cmd_pin, OUTPUT);
   pinMode(act_vel_pin, INPUT);
   pinMode(drv_enable_pin, OUTPUT);
+  pinMode(vel_cmd_relay, OUTPUT);
 
   //increase PWM frequency for speed command
   TCCR2B &= ~ _BV (CS22); // cancel pre-scaler of 64
   TCCR2B |= _BV (CS20);   // no pre-scaler
 
   digitalWrite(drv_enable_pin, HIGH); //enable accelerator switch
+  digitalWrite(vel_cmd_relay, LOW); //default to accelerator pedal input instead of PWM signal
 
   brakePos = 0; //initialize brake position index to zero
-  brakeStepLimit = 2000; // maximum steps engaging brake clockwise before torque limit reached
-  vel_cmd_limit = 235;
 
   //digitalWrite(BRAKE_ENABLE_PIN, HIGH); // Enable motor
-  Serial.println("Brake Servo Ready. Send 'CW<steps>' to turn clockwise, 'CC<steps>' to turn counter-clockwise, 'X' to toggle enable via Serial.");
+  //Serial.println("Brake Servo Ready. Send 'CW<steps>' to turn clockwise, 'CC<steps>' to turn counter-clockwise, 'X' to toggle enable via Serial.");
 }
 
 void loop() {
@@ -59,26 +60,26 @@ void loop() {
       int steps = command.substring(3).toInt(); // Extract step count
       cmd_vel = 0; // set speed command to zero
       if(steps+brakePos <= brakeStepLimit){ //check if commanded steps don't exceed limit
-        Serial.print("Brake engaging: "); Serial.println(steps);
+        //Serial.print("Brake engaging: "); Serial.println(steps);
         moveMotor(steps, HIGH); // Move clockwise
         brakePos += steps;
       }
       else{ //if commanded steps exceed limit, set to servo limit
-        Serial.print("Brake engaging: "); Serial.println(steps);
+        //Serial.print("Brake engaging: "); Serial.println(steps);
         moveMotor(brakeStepLimit-brakePos, HIGH); // Move clockwise to limit
-        Serial.println("Brake servo limit reached!");
+        //Serial.println("Brake servo limit reached!");
         brakePos = brakeStepLimit;
       }
     }
     else if (command.startsWith("CC")) { //counter-clockwise to disengage brake
       int steps = command.substring(3).toInt(); // Extract step count
       if(brakePos-steps >= 0){ //check if commanded steps don't let servo pass the zero-position
-        Serial.print("Brake disengaging "); Serial.println(steps);
+        //Serial.print("Brake disengaging "); Serial.println(steps);
         moveMotor(steps, LOW); // Move counterclockwise
         brakePos -= steps;
       }
       else{ //if commanded steps go lower than zero-position, set to servo limit
-        Serial.print("Brake disengaging "); Serial.println(steps);
+        //Serial.print("Brake disengaging "); Serial.println(steps);
         moveMotor(brakePos, LOW); // Move counterclockwise
         brakePos = 0;
       }
@@ -87,26 +88,30 @@ void loop() {
         brakePos = 0;
       if(!digitalRead(BRAKE_ENABLE_PIN)){
         digitalWrite(BRAKE_ENABLE_PIN, HIGH);
-        Serial.println("Brake Servo Enabled");
+        //Serial.println("Brake Servo Enabled");
         delay(100);
       }else{
         digitalWrite(BRAKE_ENABLE_PIN, LOW); // Disable motor
-        Serial.println("Brake Servo Disabled");
+        //Serial.println("Brake Servo Disabled");
         delay(100);
       }
     }
     else if (command.startsWith("S")) { //command speed
     cmd_vel = command.substring(2).toInt(); // Extract and set speed command
-      if(cmd_vel >= 0 && cmd_vel <= 235){ //check if commanded speed is valid
+      if(cmd_vel > 0 && cmd_vel <= 235){ //check if commanded speed is valid
+        digitalWrite(vel_cmd_relay, HIGH);
         digitalWrite(BRAKE_ENABLE_PIN, LOW); //disable brake
+        //Serial.print("Speed command: ");
+        //Serial.println(cmd_vel);
       }
       else{ 
+        digitalWrite(vel_cmd_relay, LOW);
         cmd_vel = 0;
         Serial.println("Speed command invalid");
       }
     }
     else {
-      Serial.println("Invalid Command!");
+      //Serial.println("Invalid Command!");
     }
   }
   PIDcalculation();// find PID value
@@ -143,9 +148,9 @@ void PIDcalculation(){
   else{
     act_vel = 0;
   }
-  // Serial.println(",");
-  // Serial.print("Actual velocity:");
-  // Serial.print(act_vel);
+  Serial.println(",");
+  Serial.print("Actual velocity:");
+  Serial.print(act_vel);
   // Serial.print(",");
   // Serial.print("PIDTerm:");
   // Serial.print(pidTerm_scaled);

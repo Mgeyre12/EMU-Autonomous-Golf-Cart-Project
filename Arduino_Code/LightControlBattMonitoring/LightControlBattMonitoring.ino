@@ -65,6 +65,7 @@ void loop() {
   }
   else if(batt_level>904.1){
     batt_percent = (0.909*batt_level)-742.73;
+    batt_percent = constrain(batt_percent, 0, 100);
   }
 
   Serial.print("Battery level: ");

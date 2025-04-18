@@ -19,7 +19,10 @@ void loop(){
   //Serial.println(distance);
   Serial.print(distance);
   Serial.println(" cm");                   
-  delay(50);// Wait 50mS before next ranging
+  delay(500);// Wait 50mS before next ranging
   
-  analogRead()
+  if(analogRead(7)>800){
+    Serial.print(" B ");
+  }
+  
 }

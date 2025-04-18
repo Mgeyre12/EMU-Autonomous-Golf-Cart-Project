@@ -10,7 +10,7 @@ void setup() {
   pinMode(STEP_PIN, OUTPUT);
 
   //digitalWrite(ENABLE_PIN, HIGH); // Enable motor
-  Serial.println("Motor Ready. Send 'L<steps>' to turn left. 'R<steps>' to turn right. 'X' to disable via Serial.");
+  //Serial.println("Motor Ready. Send 'L<steps>' to turn left. 'R<steps>' to turn right. 'X' to disable via Serial.");
 }
 
 void loop() {
@@ -20,28 +20,29 @@ void loop() {
 
     if (command.startsWith("L")) {
       int steps = command.substring(2).toInt(); // Extract step count
-      Serial.print("Turning Left: "); Serial.println(steps);
+      //Serial.print("Turning Left: "); Serial.println(steps);
       moveMotor(steps, HIGH); // Move Left
     }
     else if (command.startsWith("R")) {
       int steps = command.substring(2).toInt(); // Extract step count
-      Serial.print("Turning Right: "); Serial.println(steps);
+      //Serial.print("Turning Right: "); Serial.println(steps);
       moveMotor(steps, LOW); // Move Right
     }
     else if (command == "X") {
       if(!digitalRead(ENABLE_PIN)){
         digitalWrite(ENABLE_PIN, HIGH);
-        Serial.println("Steering Servo Enabled");
+        //Serial.println("Steering Servo Enabled");
         delay(100);
       }else{
         digitalWrite(ENABLE_PIN, LOW); // Disable motor
-        Serial.println("Steering Servo Disabled");
+        //Serial.println("Steering Servo Disabled");
         delay(100);
       }
     }
     else {
-      Serial.println("Invalid Command! Send 'L<steps>' to turn left or 'R<steps>' to turn right or 'X' to toggle enable via Serial.");
+      //Serial.println("Invalid Command! Send 'L<steps>' to turn left or 'R<steps>' to turn right or 'X' to toggle enable via Serial.");
     }
+    //Serial.flush();
   }
 }
 
@@ -54,7 +55,7 @@ void moveMotor(int steps, bool direction) {
   for (int i = 0; i < steps; i++) {
 
     if(!digitalRead(ENABLE_PIN)){
-    Serial.println("Motor stopped due to torque limit. Restartting....");
+    //Serial.println("Motor stopped due to torque limit. Restartting....");
     digitalWrite(ENABLE_PIN, HIGH);
     delay(500);
   }
