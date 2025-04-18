@@ -151,7 +151,7 @@ while True:
           cv2.line(frame, (midpoint_x, midpoint_y), (midpoint_x, line_top_y), (0, 255, 0), 3)
 
         Kp = 0.1;   #Proportional gain
-        Ki = 0.01;   #Integral gain
+        Ki = 0.0001;   #Integral gain
         Kd = 0.1;   #Derivative gain
         
         # Calculate error from desired center
