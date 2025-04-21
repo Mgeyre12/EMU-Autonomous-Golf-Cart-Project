@@ -66,7 +66,7 @@ while True:
     #thresh1 = 15
     #thresh2 = 15
     #edges = cv2.Canny(blur, thresh1, thresh2, L2gradient = True) # Adjust Canny thresholds as needed
-    lowerThresh = 15
+    lowerThresh = 14
     ratio = 2
     edges = cv2.Canny(blur, lowerThresh, lowerThresh, L2gradient = True) # Adjust Canny thresholds as needed
 

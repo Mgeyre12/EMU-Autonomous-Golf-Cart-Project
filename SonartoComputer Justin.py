@@ -3,9 +3,8 @@ import time
 
 # Configuration
 BAUD_RATE = 115200
-MAX_STEPS = 11000
+MAX_STEPS = 1500
 DISTANCE_WINDOW = 5
-isApproach = True
 
 # Setup serial connection
 try:
@@ -19,6 +18,7 @@ except Exception as e:
 
 # Initialize distance buffer
 distance_array = []
+avg_array = 0.0
 
 def update_distance(new_distance):
     distance_array.append(new_distance)
@@ -26,27 +26,15 @@ def update_distance(new_distance):
         distance_array.pop(0)
 
 def calculate_steps():
-    if len(distance_array) < 2:
+    if len(distance_array) < DISTANCE_WINDOW:
         return 0
-    prev = distance_array[-2]
-    curr = distance_array[-1]
-
-    avg_array = sum(distance_array)/len(distance_array)
-    
-    if curr <= 5:
-        return MAX_STEPS  # Full stop
-    
-    delta = prev - curr  # Positive = approaching
-    # print("Delta: " + str(delta))
-    if delta < 0:
-        isApproach = False
     else:
-        isApproach = True
-    rate = max(0.0, min(delta / 3.0, 1.0))
-    proximity = max(0.0, min((15 - avg_array) / 10.0, 1.0))
-    braking_ratio = rate * proximity
-    
-    return int(braking_ratio * MAX_STEPS)
+        print(f"Sum: {sum(distance_array)}, Len: {len(distance_array)}")
+        avg_array = sum(distance_array)/len(distance_array)
+        print(f"Avg Distance: {avg_array}")
+        proximity = 1-(avg_array/25)
+        braking_ratio = proximity
+        return int(braking_ratio * MAX_STEPS)
 
 # Main loop: listens for raw sonar data from another microcontroller or sensor
 if sonarArduino and brakeArduino:
@@ -62,27 +50,33 @@ if sonarArduino and brakeArduino:
                     steps = calculate_steps()
                     
                     # Send calculated steps to the motor Arduino
-                    if steps == 0:
+                    if avg_array > 10.0:
                         brakeArduino.write(("X" + '\n').encode())
 
-                    if isApproach or (distance >= 5.0 and distance <= 10.0):
+                    if (avg_array >= 5.0 and avg_array <= 10.0):
                         brakeArduino.write(f"CW{steps}\n".encode())
                         # print(f"Distance: {distance} ft | Steps CW sent: {steps}")
                     else:
                         brakeArduino.write(f"CC{steps}\n".encode())
                         # print(f"Distance: {distance} ft | Steps CC sent: {steps}")
                     
-                    if (distance <= 5.0):
+                    if (avg_array < 5.0):
                         brakeArduino.write(("CW" + "<" + str(2000) +"\n").encode())
                     
-                    print(f"Distance: {distance} ft")
-
+                    # sonarArduino.flushInput()
+                    # sonarArduino.flushOutput()
+                    # brakeArduino.flushInput()
+                    # brakeArduino.flushOutput()
+                    # sonarArduino.flush()
+                    # brakeArduino.flush()
                 except ValueError:
                     print(f"Ignoring invalid data: {raw_data}")
             #time.sleep(0.1)
     except KeyboardInterrupt:
+        brakeArduino.write(("X" + '\n').encode())
         print("Stopped by user.")
     finally:
+        brakeArduino.write(("X" + '\n').encode())
         sonarArduino.close()
 else:
     print("Serial not initialized.")
