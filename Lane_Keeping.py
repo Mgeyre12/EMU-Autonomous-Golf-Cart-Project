@@ -171,18 +171,15 @@ while True:
     # If no lanes detected, keep previous steering or slowly return to center
         steering_angle *= 0.9  # Gradually return to 0
 
-    count += 1
-    if count > 2:
-        count = 0
-        command = str(abs(steering_angle*1))
-        if steering_angle < 0 and abs(steering_angle) > 1:
-            command = ("L" + "<" + command + ">")
-        elif steering_angle > 0 and abs(steering_angle) > 1:
-            command = ("R" + "<" + command + ">") 
-        if command:
-            steerArduino.write((command + '\n').encode())
-            #print("Sending to steerArduino:", command)
-            #time.sleep(0.1)
+    command = str(abs(steering_angle*10))
+    if steering_angle < 0 and abs(steering_angle) > 1:
+        command = ("R" + "<" + command + ">")
+    elif steering_angle > 0 and abs(steering_angle) > 1:
+        command = ("L" + "<" + command + ">") 
+    if command:
+        steerArduino.write((command + '\n').encode())
+        #print("Sending to steerArduino:", command)
+        #time.sleep(0.1)
     
 
     # Draw detected lines

@@ -90,9 +90,9 @@ def detect_middle_line(edges, frame, width, height):
 time.sleep(2)  # wait for steerArduino reset
 
 # Initialize video capture
-#cap =  cv2.VideoCapture("Sidewalk_Video/Sill_Test_Lap.mp4")  # Use 0 for webcam or replace with video path
-cap =  cv2.VideoCapture("Sidewalk_Video/output12.mp4")  # Use 0 for webcam or replace with video path
-#cap =  cv2.VideoCapture(0)  # Use 0 for webcam or replace with video path
+# cap =  cv2.VideoCapture("Sidewalk_Video/Sill_Test_Lap.mp4")  # Use 0 for webcam or replace with video path
+# cap =  cv2.VideoCapture("Sidewalk_Video/output12.mp4")  # Use 0 for webcam or replace with video path
+cap =  cv2.VideoCapture(0)  # Use 0 for webcam or replace with video path
 last_error = 0
 totalError = 0
 
